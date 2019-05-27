@@ -232,6 +232,7 @@ void findPlayerLocation()
 
 int main(void)
 {
+    printf("test");
     loadMap();
     initStage();
     while(true)
