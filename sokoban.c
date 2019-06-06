@@ -31,6 +31,18 @@ void cls()
     system("clear"); 
 }
 
+void clearData()
+{
+     for(int t = 0; t < 5; t++) {
+        for(int i = 0; i < 30; i++)
+        {
+            for(int j = 0; j < 30; j++) {
+                inputCache[t][i][j] = ' ';           
+            }
+        }
+    }
+}
+
 void saveStatus() 
 {
     FILE *fp = fopen("sokoban","w");
@@ -200,6 +212,7 @@ void inputCommand()
     ch = getch();
     switch(ch){
         case 'u' :
+            undoMovement();
             break;
         case 'r' :
             break;
