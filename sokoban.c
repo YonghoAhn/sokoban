@@ -118,7 +118,7 @@ void recordUndo(char ch)
 
 void undoMovement()
 {
-    if(undoIndex < 0) return;
+    if(undoIndex <= 0) return;
     if(undoCount++ > 4) return;
     for(int cy = 0; cy < 30; cy++)
     {
@@ -268,19 +268,25 @@ void movePlayer(char ch)
         {   
             //check two step forward
             switch(stage[playerY + (deltaY * 2)][playerX + (deltaX * 2)]) {
-                case '.' :
-                    stage[playerY + deltaY * 2][playerX + deltaX * 2] = '$';
-                    stage[playerY+deltaY][ playerX + deltaX] = '.';
-                    break;
                 case '#' :
                 case '$' :
                     return;
-                case 'O':
+            }
+        }
+
+        recordUndo(ch);
+
+        if (stage[playerY+deltaY][playerX + deltaX] == '$')
+        {
+            switch(stage[playerY + (deltaY * 2)][playerX + (deltaX * 2)]) {
+                case '.' :
+                case 'O' :
                     stage[playerY+deltaY][ playerX + deltaX] = '.';
                     stage[playerY + deltaY * 2][playerX + deltaX * 2] = '$';
                     break;
             }
         }
+
         if(StageData[currentRound][playerY][playerX] != 'O')
             stage[playerY][playerX] = '.';
         else
@@ -294,8 +300,8 @@ void movePlayer(char ch)
         stage[playerY][playerX] = '@';
 
         //if player collided to a wall, then don't refresh.
-        numMove++;  
-        recordUndo(ch);
+        numMove++; 
+         
         drawStage();
 }
 
