@@ -85,6 +85,43 @@ void loadStatus()
     inputCommand();
 }
 
+void replayStatus()
+{
+    break;
+}
+
+void newStatus()
+{
+    if (currentRound < MAXSIZE-1) {
+        currentRound++;
+    }
+    
+}
+
+void exitStatus()
+{
+    exit(0);
+}
+
+void displayhelpStatus()
+{
+    int x, y;
+
+    for(y = 0 ; y < 18 ; y++){
+        for (x = 0; x < 20; x++){
+            putchxy(x,y,ns[y][x];)
+        }
+    }
+    putchxy(nx,ny,'@');
+
+    gotoxy(40,2);puts("SOkOBAN");
+    gotoxy(40,4);puts("e: 종료, r: 다시시작");
+    gotoxy(40,6);puts("n: 다음, d: 도움말");
+    gotoxy(40,8);puts("스테이지 : %d",currentRound+1);
+    gotoxy(40,10);puts("이동 횟수 : %d",numMove);
+
+}
+
 void recordUndo(char ch)
 {
     if(undoIndex < 4) {
@@ -215,10 +252,12 @@ void inputCommand()
             undoMovement();
             break;
         case 'r' :
-            break;
+            replayStatus();
         case 'n' :
+            newStatus();
             break;
         case 'e' :
+            exitStatus();
             break;
         case 's' :
             saveStatus();
@@ -227,6 +266,7 @@ void inputCommand()
             loadStatus();
             break;
         case 'd' :
+            displayhelpStatus();
             break;
         case 'h' :
         case 'j' :
