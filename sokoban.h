@@ -11,3 +11,11 @@ _Bool isStageClear();
 void cls();
 void initStage();
 void findPlayerLocation();
+
+//황유호 ranking
+void AddRank(int map, int score);
+void RankSort(void);
+void FileLoad(void);
+void FileSave(void);
+void RankDraw(void);
+void rankingCommand();
