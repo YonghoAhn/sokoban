@@ -122,12 +122,14 @@ void displayRanking(int map)
             printf("%s\t%d\n",rankingName[map-1][i],rankingMove[map-1][i]);
         }
     }
-    char c = getchar();
-    if(c == '\n') {
-        cls();
-        drawStage();
-        inputCommand();
-        return;
+    while(1) {
+        char c = getchar();
+        if(c == '\n') {
+            cls();
+            drawStage();
+            inputCommand();
+            return;
+        }
     }
 }
 
@@ -214,12 +216,21 @@ void exitGame()
 
 void drawHelp()
 {
+    cls();
     puts("SOKOBAN");
     puts("e: 종료, r: 다시시작");
     puts("n: 다음, d: 도움말");
     printf("스테이지 : %d\n",currentRound+1);
     printf("이동 횟수 : %d\n",numMove);
-
+    while(1) {
+        char c = getchar();
+        if(c == '\n') {
+            cls();
+            drawStage();
+            inputCommand();
+            return;
+        }
+    }
 }
 
 void recordUndo(char ch)
