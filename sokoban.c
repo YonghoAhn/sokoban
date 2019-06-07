@@ -27,20 +27,15 @@ int undoIndex = 0;
 
 int currentRound = 0;
 
-struct info{
-	char name[5];
-	int map;
-	int score;
-};
-
-struct info rank[5];
+int rank[5];
+int score[5];
+int map[5];
+char name[5];
 
 /*게임이 끝난 후 점수와 맵을 랭킹에 저장*/
 void addRanking(int map, int score)
 {
-	
-	rank[5].map = map;
-	rank[5].score = score;
+    //맵과 점수를 저장
 	sortRanking();
 	saveRanking();
 }
@@ -48,21 +43,18 @@ void addRanking(int map, int score)
 /*점수(움직인 횟수)에 따라 랭크 정렬*/
 void sortRanking(void)
 {
-	int i,j,cnt=0;
-	struct info temp;
-	
-	for(i=0; i<5; i++)
-	{
-		for(j=0; j<6; j++)
-		{
-			if(rank[j].score > rank[j+1].score)
-			{
-				temp = rank[j];
-				rank[j] = rank[j+1];
-				rank[j+1] = temp;
+    int cnt;
+    rank[5];
+
+	for (int i = 0; i < 5; i++) {
+    	cnt = 0; //매번 i 바뀔 때 초기화.
+		for (int j = 0; j < 5; j++) {
+            if (score[i] > score[j]) { //자신보다 크다면 cnt 1증가.
+                cnt++;
 			}
 		}
-	}
+        rank[i] = cnt + 1; //등수 결정.
+    }
 	saveRanking();
 }
 
@@ -74,16 +66,14 @@ void loadRanking(void)
 	
 	savefile=fopen("ranking.txt","rt");
 
-	
 	if(savefile == NULL){ //오류 or 파일 없을시 새로 생성 
 		savefile=fopen("ranking.txt","a");
 		fclose(savefile);
 		return;
 	}
 	
-	
 	for(i=0; i<5; i++)
-		fscanf(savefile,"%d %d %s\n", &rank[i].map, &rank[i].score, &rank[i].name);
+		fscanf(savefile,"%d %d %d %s\n",&rank[i], &map[i], &score[i], &name[i]);
 		
 	fclose(savefile);
 }
@@ -96,10 +86,10 @@ void saveRanking(void)
 	savefile=fopen("ranking.txt","wt");
 	
 	for(i=0; i<5; i++){
-		if(rank[i].score == 0) //점수가 0점이면
+		if(score[i] == 0) //점수가 0점이면
 			fprintf(savefile,"0 0 ---\n");
 		else	
-		    fprintf(savefile,"%d %d %s\n", rank[i].map, rank[i].score, rank[i].name);	
+		    fprintf(savefile,"%d %d %d %s\n",rank[i], map[i], score[i], name[i]);	
 	}
 	fclose(savefile);
 }
@@ -107,30 +97,36 @@ void saveRanking(void)
 /*랭킹 띄우기 */
 void drawRank(void)
 {
-    int i, j;
+    int i;
 
     loadRanking();
 	sortRanking();
-
-	for(i=0; i<5; i++){
-        printf("맵 %d\n",rank[i].map);
-        for(j=0; j<5; j++){
-            printf("[%d]위 닉네임: %s , 점수 : %d\n",j+1, rank[j].name, rank[j].score);
-		    Sleep(200);
-        }
-	}
-	system("cls");
+    
+    for(i=0; i<5; i++){
+        printf("[%d]위 닉네임: %s , 점수 : %d\n",rank[i], name[i], score[i]);
+		Sleep(200);
+    }
+    cls();
 }
 
 /*랭킹 커맨드 */
 void rankingCommand()
 {
     char ch;
+    int x;
+    char Y;
     ch = getch();
     switch(ch){
         case 't' :
-            drawRank();
-            break;
+            do {
+                printf("t");
+                scanf("%d", &x);
+                getchar();
+                printf("%d\n",map[x-1]);
+                drawRank();
+                scanf("%c", &Y);
+            } while(Y == 'y');
+        break;
     }
 }
 
@@ -195,19 +191,20 @@ void loadStatus()
 
 void replayStage()
 {
-    return;
+    initStage();
 }
 
 void newStage()
 {
-    if (currentRound < MAXSIZE-1) {
-        currentRound++;
-    }
-    
+    numMove = 0;
+    currentRound = 0;
+    initStage();
 }
 
 void exitGame()
 {
+    cls();
+    printf("S E E\tY O U\t%s\n",username);
     exit(0);
 }
 
@@ -492,7 +489,8 @@ void findPlayerLocation()
 
 int main(void)
 {
-    printf("test");
+    printf("Start....\nInput name : ");
+    scanf("%s",username);    
     loadMap();
     initStage();
     while(true)
@@ -506,7 +504,7 @@ int main(void)
             //clearData();
             //updateRanking();
             currentRound++;
-            if(currentRound >= MAXSIZE) exit(0);
+            if(currentRound >= MAXSIZE) exitGame();
             undoCount = 0;
             numMove = 0;
             initStage();
