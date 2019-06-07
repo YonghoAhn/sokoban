@@ -1,6 +1,7 @@
 #include "getch.h"
 #include "sokoban.h"
 #include <string.h>
+#include <windows.h>
 
 #define UP 106
 #define DOWN 107
@@ -13,6 +14,7 @@
 char stage[30][30] = {' ', };
 char StageData[5][30][30];
 char username[10];
+
 int numMove = 0;
 
 int playerX = 0;
@@ -25,6 +27,114 @@ int undoIndex = 0;
 
 
 int currentRound = 0;
+int undoCount = 0;
+
+struct info{
+	char name[5];
+	int map;
+	int score;
+};
+
+struct info rank[5];
+
+/*게임이 끝난 후 점수와 맵을 랭킹에 저장*/
+void AddRank(int map, int score)
+{
+	
+	rank[5].map = map;
+	rank[5].score = score;
+	RankSort();
+	FileSave();
+}
+       
+/*점수(움직인 횟수)에 따라 랭크 정렬*/
+void RankSort(void)
+{
+	int i,j,cnt=0;
+	struct info temp;
+	
+	for(i=0; i<5; i++)
+	{
+		for(j=0; j<6; j++)
+		{
+			if(rank[j].score > rank[j+1].score)
+			{
+				temp = rank[j];
+				rank[j] = rank[j+1];
+				rank[j+1] = temp;
+			}
+		}
+	}
+	FileSave();
+}
+
+/*파일을 열어 저장되어있던 데이터를 불러옴*/
+void FileLoad(void)
+{
+	int i;
+	FILE *savefile;
+	
+	savefile=fopen("ranking.txt","rt");
+
+	
+	if(savefile == NULL){ //오류 or 파일 없을시 새로 생성 
+		savefile=fopen("ranking.txt","a");
+		fclose(savefile);
+		return;
+	}
+	
+	
+	for(i=0; i<5; i++)
+		fscanf(savefile,"%d %d %s\n", &rank[i].map, &rank[i].score, &rank[i].name);
+		
+	fclose(savefile);
+}
+
+/*파일을 열어 TOP 5위 랭킹기록 후 저장*/
+void FileSave(void)
+{	
+	int i;
+	FILE *savefile;
+	savefile=fopen("ranking.txt","wt");
+	
+	for(i=0; i<5; i++){
+		if(rank[i].score == 0) //점수가 0점이면
+			fprintf(savefile,"0 0 ---\n");
+		else	
+		    fprintf(savefile,"%d %d %s\n", rank[i].map, rank[i].score, rank[i].name);	
+	}
+	fclose(savefile);
+}
+
+/*랭킹 띄우기 */
+void RankDraw(void)
+{
+    int i, j;
+
+    FileLoad();
+	RankSort();
+
+	for(i=0; i<5; i++){
+        printf("맵 %d\n",rank[i].map);
+        for(j=0; j<5; j++){
+            printf("[%d]위 닉네임: %s , 점수 : %d\n",j+1, rank[j].name, rank[j].score);
+		    Sleep(200);
+        }
+	}
+	system("cls");
+}
+
+/*랭킹 커맨드 */
+void rankingCommand()
+{
+    char ch;
+    ch = getch();
+    switch(ch){
+        case 't' :
+        RankDraw();
+        break;
+    }
+}
 
 void cls() 
 { 
@@ -332,11 +442,13 @@ void findPlayerLocation()
 
 int main(void)
 {
+    printf("test");
     loadMap();
     initStage();
     while(true)
     {
         inputCommand();
+        rankingCommand();
         if(isStageClear())
         {
             //if Stage cleared, then go to next map / or end game
