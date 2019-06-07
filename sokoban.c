@@ -141,6 +141,18 @@ void cls()
     system("clear"); 
 }
 
+void clearData()
+{
+     for(int t = 0; t < 5; t++) {
+        for(int i = 0; i < 30; i++)
+        {
+            for(int j = 0; j < 30; j++) {
+                inputCache[t][i][j] = ' ';           
+            }
+        }
+    }
+}
+
 void saveStatus() 
 {
     FILE *fp = fopen("sokoban","w");
@@ -183,6 +195,43 @@ void loadStatus()
     inputCommand();
 }
 
+void replayStatus()
+{
+    break;
+}
+
+void newStatus()
+{
+    if (currentRound < MAXSIZE-1) {
+        currentRound++;
+    }
+    
+}
+
+void exitStatus()
+{
+    exit(0);
+}
+
+void displayhelpStatus()
+{
+    int x, y;
+
+    for(y = 0 ; y < 18 ; y++){
+        for (x = 0; x < 20; x++){
+            putchxy(x,y,ns[y][x];)
+        }
+    }
+    putchxy(nx,ny,'@');
+
+    gotoxy(40,2);puts("SOkOBAN");
+    gotoxy(40,4);puts("e: 종료, r: 다시시작");
+    gotoxy(40,6);puts("n: 다음, d: 도움말");
+    gotoxy(40,8);puts("스테이지 : %d",currentRound+1);
+    gotoxy(40,10);puts("이동 횟수 : %d",numMove);
+
+}
+
 void recordUndo(char ch)
 {
     if(undoIndex < 4) {
@@ -216,7 +265,7 @@ void recordUndo(char ch)
 
 void undoMovement()
 {
-    if(undoIndex < 0) return;
+    if(undoIndex <= 0) return;
     if(undoCount++ > 4) return;
     for(int cy = 0; cy < 30; cy++)
     {
@@ -310,12 +359,15 @@ void inputCommand()
     ch = getch();
     switch(ch){
         case 'u' :
+            undoMovement();
             break;
         case 'r' :
-            break;
+            replayStatus();
         case 'n' :
+            newStatus();
             break;
         case 'e' :
+            exitStatus();
             break;
         case 's' :
             saveStatus();
@@ -324,6 +376,7 @@ void inputCommand()
             loadStatus();
             break;
         case 'd' :
+            displayhelpStatus();
             break;
         case 'h' :
         case 'j' :
@@ -365,19 +418,25 @@ void movePlayer(char ch)
         {   
             //check two step forward
             switch(stage[playerY + (deltaY * 2)][playerX + (deltaX * 2)]) {
-                case '.' :
-                    stage[playerY + deltaY * 2][playerX + deltaX * 2] = '$';
-                    stage[playerY+deltaY][ playerX + deltaX] = '.';
-                    break;
                 case '#' :
                 case '$' :
                     return;
-                case 'O':
+            }
+        }
+
+        recordUndo(ch);
+
+        if (stage[playerY+deltaY][playerX + deltaX] == '$')
+        {
+            switch(stage[playerY + (deltaY * 2)][playerX + (deltaX * 2)]) {
+                case '.' :
+                case 'O' :
                     stage[playerY+deltaY][ playerX + deltaX] = '.';
                     stage[playerY + deltaY * 2][playerX + deltaX * 2] = '$';
                     break;
             }
         }
+
         if(StageData[currentRound][playerY][playerX] != 'O')
             stage[playerY][playerX] = '.';
         else
@@ -391,8 +450,8 @@ void movePlayer(char ch)
         stage[playerY][playerX] = '@';
 
         //if player collided to a wall, then don't refresh.
-        numMove++;  
-        recordUndo(ch);
+        numMove++; 
+         
         drawStage();
 }
 

@@ -2,11 +2,11 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-_Bool checkValidMap(int index);
+_Bool checkValidMap(int);
 void loadMap();
 void drawStage();
 void inputCommand();
-void movePlayer(char ch);
+void movePlayer(char);
 _Bool isStageClear();
 void cls();
 void initStage();
@@ -19,3 +19,10 @@ void FileLoad(void);
 void FileSave(void);
 void RankDraw(void);
 void rankingCommand();
+
+//김태엽 status
+void saveStatus();
+void loadStatus();
+void recordUndo(char);
+void undoMovement();
+void clearData();
