@@ -133,12 +133,6 @@ void displayRanking(int map)
     }
 }
 
-/*랭킹 커맨드 */
-void rankingCommand()
-{
-
-}
-
 void cls() 
 { 
     system("clear"); 
