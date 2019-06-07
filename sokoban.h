@@ -13,11 +13,11 @@ void initStage();
 void findPlayerLocation();
 
 //황유호 ranking
-void AddRank(int map, int score);
-void RankSort(void);
-void FileLoad(void);
-void FileSave(void);
-void RankDraw(void);
+void addRanking(int map, int score);
+void sortRanking(void);
+void loadRanking(void);
+void saveRanking(void);
+void drawRank(void);
 void rankingCommand();
 
 //김태엽 status

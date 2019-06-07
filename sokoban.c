@@ -25,9 +25,7 @@ int playerPos[5][2] = {0,};
 int undoCount = 0;
 int undoIndex = 0;
 
-
 int currentRound = 0;
-int undoCount = 0;
 
 struct info{
 	char name[5];
@@ -38,17 +36,17 @@ struct info{
 struct info rank[5];
 
 /*게임이 끝난 후 점수와 맵을 랭킹에 저장*/
-void AddRank(int map, int score)
+void addRanking(int map, int score)
 {
 	
 	rank[5].map = map;
 	rank[5].score = score;
-	RankSort();
-	FileSave();
+	sortRanking();
+	saveRanking();
 }
        
 /*점수(움직인 횟수)에 따라 랭크 정렬*/
-void RankSort(void)
+void sortRanking(void)
 {
 	int i,j,cnt=0;
 	struct info temp;
@@ -65,11 +63,11 @@ void RankSort(void)
 			}
 		}
 	}
-	FileSave();
+	saveRanking();
 }
 
 /*파일을 열어 저장되어있던 데이터를 불러옴*/
-void FileLoad(void)
+void loadRanking(void)
 {
 	int i;
 	FILE *savefile;
@@ -91,7 +89,7 @@ void FileLoad(void)
 }
 
 /*파일을 열어 TOP 5위 랭킹기록 후 저장*/
-void FileSave(void)
+void saveRanking(void)
 {	
 	int i;
 	FILE *savefile;
@@ -107,12 +105,12 @@ void FileSave(void)
 }
 
 /*랭킹 띄우기 */
-void RankDraw(void)
+void drawRank(void)
 {
     int i, j;
 
-    FileLoad();
-	RankSort();
+    loadRanking();
+	sortRanking();
 
 	for(i=0; i<5; i++){
         printf("맵 %d\n",rank[i].map);
@@ -131,8 +129,8 @@ void rankingCommand()
     ch = getch();
     switch(ch){
         case 't' :
-        RankDraw();
-        break;
+            drawRank();
+            break;
     }
 }
 
@@ -195,12 +193,12 @@ void loadStatus()
     inputCommand();
 }
 
-void replayStatus()
+void replayStage()
 {
-    break;
+    return;
 }
 
-void newStatus()
+void newStage()
 {
     if (currentRound < MAXSIZE-1) {
         currentRound++;
@@ -208,27 +206,18 @@ void newStatus()
     
 }
 
-void exitStatus()
+void exitGame()
 {
     exit(0);
 }
 
-void displayhelpStatus()
+void drawHelp()
 {
-    int x, y;
-
-    for(y = 0 ; y < 18 ; y++){
-        for (x = 0; x < 20; x++){
-            putchxy(x,y,ns[y][x];)
-        }
-    }
-    putchxy(nx,ny,'@');
-
-    gotoxy(40,2);puts("SOkOBAN");
-    gotoxy(40,4);puts("e: 종료, r: 다시시작");
-    gotoxy(40,6);puts("n: 다음, d: 도움말");
-    gotoxy(40,8);puts("스테이지 : %d",currentRound+1);
-    gotoxy(40,10);puts("이동 횟수 : %d",numMove);
+    puts("SOKOBAN");
+    puts("e: 종료, r: 다시시작");
+    puts("n: 다음, d: 도움말");
+    printf("스테이지 : %d\n",currentRound+1);
+    printf("이동 횟수 : %d\n",numMove);
 
 }
 
@@ -362,12 +351,13 @@ void inputCommand()
             undoMovement();
             break;
         case 'r' :
-            replayStatus();
+            replayStage();
+            break;
         case 'n' :
-            newStatus();
+            newStage();
             break;
         case 'e' :
-            exitStatus();
+            exitGame();
             break;
         case 's' :
             saveStatus();
@@ -376,7 +366,7 @@ void inputCommand()
             loadStatus();
             break;
         case 'd' :
-            displayhelpStatus();
+            drawHelp();
             break;
         case 'h' :
         case 'j' :
@@ -385,6 +375,7 @@ void inputCommand()
             movePlayer(ch);
             break;
         default :
+            rankingCommand();
             break;
     }
 } 
@@ -507,7 +498,6 @@ int main(void)
     while(true)
     {
         inputCommand();
-        rankingCommand();
         if(isStageClear())
         {
             //if Stage cleared, then go to next map / or end game
