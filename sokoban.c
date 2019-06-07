@@ -1,7 +1,6 @@
 #include "getch.h"
 #include "sokoban.h"
 #include <string.h>
-#include <windows.h>
 
 #define UP 106
 #define DOWN 107
@@ -104,7 +103,6 @@ void drawRank(void)
     
     for(i=0; i<5; i++){
         printf("[%d]위 닉네임: %s , 점수 : %d\n",rank[i], name[i], score[i]);
-		Sleep(200);
     }
     cls();
 }
