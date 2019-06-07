@@ -20,6 +20,12 @@ int numMove = 0;
 int playerX = 0;
 int playerY = 0;
 
+char inputCache[5][30][30] = {0,};
+int playerPos[5][2] = {0,};
+int undoCount = 0;
+int undoIndex = 0;
+
+
 int currentRound = 0;
 int undoCount = 0;
 
@@ -135,6 +141,98 @@ void cls()
     system("clear"); 
 }
 
+void saveStatus() 
+{
+    FILE *fp = fopen("sokoban","w");
+    fprintf(fp,"%d\n%d\n%d\n%d\n%d\n",numMove,undoCount,playerX,playerY,currentRound);
+    for(int y = 0; y < 30; y++)
+    {   
+        if(strlen(stage[y]) < 1)
+            fprintf(fp,"                            \n");
+        else
+            fprintf(fp,"%s\n",stage[y]);
+    }
+    fclose(fp);
+}
+
+void loadStatus() 
+{
+    FILE *fp = fopen("sokoban","r");
+    char buffer[30] = {0,};
+    int mapNum = 0;
+    int i = 0;
+
+    clearData();
+    fscanf(fp,"%d",&numMove);
+    fscanf(fp,"%d",&undoCount);
+    fscanf(fp,"%d",&playerX);
+    fscanf(fp,"%d",&playerY);
+    fscanf(fp,"%d",&currentRound);
+    fgetc(fp);
+    cls();
+    //gotoxy(1,1);
+    //어차피 30,30 사이즈로 맵을 출력할건데 굳이 나눌 필요가 있을까
+    for(i = 0; i < 30; i++)
+    {
+        fgets(buffer,30,fp);
+        strcpy(stage[i],buffer);
+        stage[i][strlen(stage[i])-1] = '\0';
+    }
+    fclose(fp);
+    drawStage();
+    inputCommand();
+}
+
+void recordUndo(char ch)
+{
+    if(undoIndex < 4) {
+        undoIndex++;
+    }
+    else {
+        for(int i = 0; i < 4; i++){
+            for(int cy = 0; cy < 30; cy++)
+            {
+                for(int cx = 0; cx < 30; cx++)
+                {
+                    inputCache[i][cy][cx] = inputCache[i+1][cy][cx];
+                }
+            }
+            playerPos[i][0] = playerPos[i+1][0];
+            playerPos[i][1] = playerPos[i+1][1];
+        }
+    }
+
+    for(int cy = 0; cy < 30; cy++)
+    {
+        for(int cx = 0; cx < 30; cx++)
+        {
+           inputCache[undoIndex][cy][cx] = stage[cy][cx];
+        }
+    }
+
+    playerPos[undoIndex][0] = playerX;
+    playerPos[undoIndex][1] = playerY;
+}
+
+void undoMovement()
+{
+    if(undoIndex < 0) return;
+    if(undoCount++ > 4) return;
+    for(int cy = 0; cy < 30; cy++)
+    {
+        for(int cx = 0; cx < 30; cx++)
+        {
+            stage[cy][cx] = inputCache[undoIndex][cy][cx];
+        }
+    }
+    playerX = playerPos[undoIndex][0];
+    playerY = playerPos[undoIndex][1];
+    undoIndex--;
+    numMove++;
+    drawStage();
+    inputCommand();    
+}
+
 _Bool checkValidMap(int index)
 {
     int cntBox, cntHole = 0;
@@ -220,8 +318,10 @@ void inputCommand()
         case 'e' :
             break;
         case 's' :
+            saveStatus();
             break;
         case 'f' :
+            loadStatus();
             break;
         case 'd' :
             break;
@@ -292,7 +392,7 @@ void movePlayer(char ch)
 
         //if player collided to a wall, then don't refresh.
         numMove++;  
-        //recordUndo(ch);
+        recordUndo(ch);
         drawStage();
 }
 
