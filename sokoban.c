@@ -26,106 +26,115 @@ int undoIndex = 0;
 
 int currentRound = 0;
 
-int rank[5];
-int score[5];
-int map[5];
-char name[5];
+char rankingName[5][5][10];
+int rankingMove[5][5];
 
-/*게임이 끝난 후 점수와 맵을 랭킹에 저장*/
-void addRanking(int map, int score)
+void loadRanking()
 {
-    //맵과 점수를 저장
-	sortRanking();
-	saveRanking();
-}
-       
-/*점수(움직인 횟수)에 따라 랭크 정렬*/
-void sortRanking(void)
-{
-    int cnt;
-    rank[5];
-
-	for (int i = 0; i < 5; i++) {
-    	cnt = 0; //매번 i 바뀔 때 초기화.
-		for (int j = 0; j < 5; j++) {
-            if (score[i] > score[j]) { //자신보다 크다면 cnt 1증가.
-                cnt++;
-			}
-		}
-        rank[i] = cnt + 1; //등수 결정.
+    FILE *fp = fopen("ranking","r");
+    char buffer[50];
+    int i = 0;
+    int map = 0;
+    while(true)
+    {
+        fscanf(fp,"%s",&buffer); //read line
+        if(buffer[0] == '#')
+        {
+            //buffer[1] will be the map number
+            map = buffer[1] - ONE;
+        }
+        else if (buffer[0] == 'e')
+        { break; }
+        else
+        {
+            int score = 0;
+            fscanf(fp,"%d",&score);
+            rankingMove[map][i] = score;
+            strncpy(rankingName[map][i], buffer,10);
+            i++;
+        }
     }
-	saveRanking();
+    fclose(fp);
 }
 
-/*파일을 열어 저장되어있던 데이터를 불러옴*/
-void loadRanking(void)
+void updateRanking()
 {
-	int i;
-	FILE *savefile;
-	
-	savefile=fopen("ranking.txt","rt");
+    //Loop current stage ranking and change it
+    int i, j = 0;
+    for(i = 0; i < 5; i++)
+    {
+        //checking from top (lowest)
+        //if lowest ranking was 0, then there is 
+        if(rankingMove[currentRound][i] > numMove || rankingMove[currentRound][i] == 0)
+        {
+            for(j = 4; j > i+1; j--)
+            {
+                rankingMove[currentRound][j] = rankingMove[currentRound][j-1];
+                strcpy(rankingName[currentRound][j],rankingName[currentRound][j-1]);
+            }
 
-	if(savefile == NULL){ //오류 or 파일 없을시 새로 생성 
-		savefile=fopen("ranking.txt","a");
-		fclose(savefile);
-		return;
-	}
-	
-	for(i=0; i<5; i++)
-		fscanf(savefile,"%d %d %d %s\n",&rank[i], &map[i], &score[i], &name[i]);
-		
-	fclose(savefile);
-}
-
-/*파일을 열어 TOP 5위 랭킹기록 후 저장*/
-void saveRanking(void)
-{	
-	int i;
-	FILE *savefile;
-	savefile=fopen("ranking.txt","wt");
-	
-	for(i=0; i<5; i++){
-		if(score[i] == 0) //점수가 0점이면
-			fprintf(savefile,"0 0 ---\n");
-		else	
-		    fprintf(savefile,"%d %d %d %s\n",rank[i], map[i], score[i], name[i]);	
-	}
-	fclose(savefile);
-}
-
-/*랭킹 띄우기 */
-void drawRank(void)
-{
-    int i;
-
-    loadRanking();
-	sortRanking();
-    
-    for(i=0; i<5; i++){
-        printf("[%d]위 닉네임: %s , 점수 : %d\n",rank[i], name[i], score[i]);
+            strcpy(rankingName[currentRound][i], username);
+            rankingMove[currentRound][i] = numMove;
+            break;
+        } //compare move count
     }
+    saveRanking();
+}
+
+void saveRanking()
+{
+    FILE *fp = fopen("ranking", "w");
+    for(int i = 0; i < 5; i++)
+    {
+        fprintf(fp,"#%d\n",i+1);
+        for(int j = 0; j < 5; j++)
+        {
+            if(strlen(rankingName[i][j]) > 0)
+            {
+                fprintf(fp,"%s %d\n", rankingName[i][j], rankingMove[i][j]);
+            }
+        }
+    }
+    fprintf(fp,"e");
+    fclose(fp);
+}
+
+
+void displayRanking(int map)
+{
     cls();
+    if(map == 0)
+    {
+        for(int j = 0; j < 5; j++) { 
+            printf("map %d\n",j+1);
+            for(int i = 0; strlen(rankingName[j][i]);i++)
+            {
+                printf("%s\t%d\n",rankingName[j][i],rankingMove[j][i]);
+            }
+        }
+    }
+    else 
+    {
+        getchar();
+        printf("map %d\n",map);
+        for(int i = 0; strlen(rankingName[map-1][i]);i++)
+        {
+            printf("%s\t%d\n",rankingName[map-1][i],rankingMove[map-1][i]);
+        }
+    }
+    char c = getchar();
+    if(c == '\n') {
+        cls();
+        drawStage();
+        inputCommand();
+        return;
+    }
 }
 
 /*랭킹 커맨드 */
 void rankingCommand()
 {
-    char ch;
-    int x;
-    char Y;
-    ch = getch();
-    switch(ch){
-        case 't' :
-            do {
-                printf("t");
-                scanf("%d", &x);
-                getchar();
-                printf("%d\n",map[x-1]);
-                drawRank();
-                scanf("%c", &Y);
-            } while(Y == 'y');
-        break;
-    }
+
 }
 
 void cls() 
@@ -148,7 +157,7 @@ void clearData()
 void saveStatus() 
 {
     FILE *fp = fopen("sokoban","w");
-    fprintf(fp,"%d\n%d\n%d\n%d\n%d\n",numMove,undoCount,playerX,playerY,currentRound);
+    fprintf(fp,"%d\n%d\n%d\n%d\n",numMove,playerX,playerY,currentRound);
     for(int y = 0; y < 30; y++)
     {   
         if(strlen(stage[y]) < 1)
@@ -168,14 +177,11 @@ void loadStatus()
 
     clearData();
     fscanf(fp,"%d",&numMove);
-    fscanf(fp,"%d",&undoCount);
     fscanf(fp,"%d",&playerX);
     fscanf(fp,"%d",&playerY);
     fscanf(fp,"%d",&currentRound);
     fgetc(fp);
     cls();
-    //gotoxy(1,1);
-    //어차피 30,30 사이즈로 맵을 출력할건데 굳이 나눌 필요가 있을까
     for(i = 0; i < 30; i++)
     {
         fgets(buffer,30,fp);
@@ -341,37 +347,48 @@ void inputCommand()
     char ch;
     int rankingPage = 0;
     ch = getch();
-    switch(ch){
-        case 'u' :
-            undoMovement();
-            break;
-        case 'r' :
-            replayStage();
-            break;
-        case 'n' :
-            newStage();
-            break;
-        case 'e' :
-            exitGame();
-            break;
-        case 's' :
-            saveStatus();
-            break;
-        case 'f' :
-            loadStatus();
-            break;
-        case 'd' :
-            drawHelp();
-            break;
-        case 'h' :
-        case 'j' :
-        case 'k' :
-        case 'l' :
-            movePlayer(ch);
-            break;
-        default :
-            rankingCommand();
-            break;
+    if(ch == 't') {
+        printf("t ");
+        int map = 0;
+        ch = getchar();
+        if(ch == '\n')
+            displayRanking(0);
+        else if(ch - ONE >= 0 && ch - ONE <= 4) {
+            ch -= ONE;
+            displayRanking(ch+1);
+        }
+    } else {
+        switch(ch){
+            case 'u' :
+                undoMovement();
+                break;
+            case 'r' :
+                replayStage();
+                break;
+            case 'n' :
+                newStage();
+                break;
+            case 'e' :
+                exitGame();
+                break;
+            case 's' :
+                saveStatus();
+                break;
+            case 'f' :
+                loadStatus();
+                break;
+            case 'd' :
+                drawHelp();
+                break;
+            case 'h' :
+            case 'j' :
+            case 'k' :
+            case 'l' :
+                movePlayer(ch);
+                break;
+            default : 
+                break;
+        }
     }
 } 
 
@@ -490,6 +507,7 @@ int main(void)
     printf("Start....\nInput name : ");
     scanf("%s",username);    
     loadMap();
+    loadRanking();
     initStage();
     while(true)
     {
@@ -500,7 +518,7 @@ int main(void)
             cls();
             //remove all undo data
             //clearData();
-            //updateRanking();
+            updateRanking();
             currentRound++;
             if(currentRound >= MAXSIZE) exitGame();
             undoCount = 0;
